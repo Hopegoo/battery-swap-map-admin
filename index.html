@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>骑手部落 · 后台数据管理</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- 登录页面 -->
+  <div class="login-page" id="loginPage">
+    <div class="login-box">
+      <div class="login-header">
+        <span class="login-logo">🏍️</span>
+        <h1>骑手部落</h1>
+        <p>后台数据管理系统</p>
+      </div>
+      <form class="login-form" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label>管理员账号</label>
+          <input type="text" id="login-username" placeholder="请输入账号" required>
+        </div>
+        <div class="form-group">
+          <label>登录密码</label>
+          <input type="password" id="login-password" placeholder="请输入密码" required>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">登 录</button>
+        <p class="login-hint">默认账号: admin / 密码: admin123</p>
+      </form>
+    </div>
+  </div>
+
+  <!-- 后台管理主界面 -->
+  <div class="admin-container" id="adminContainer">
+  <!-- 顶部导航 -->
+    <div class="header-brand">
+      <span class="header-logo">🏍️</span>
+      <span class="header-title">骑手部落 · 后台数据管理</span>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-outline" onclick="exportData()">⬇️ 导出 stations.js</button>
+      <button class="btn btn-primary" onclick="previewData()">👁 预览数据</button>
+    </div>
+  </header>
+
+  <div class="layout">
+
+    <!-- 左侧菜单 -->
+    <aside class="sidebar">
+      <nav class="nav">
+        <div class="nav-section-title">数据录入</div>
+        <a class="nav-item active" data-tab="shop" onclick="switchTab('shop', this)">
+          <span>🛵</span> 电动车行
+        </a>
+        <a class="nav-item" data-tab="swap" onclick="switchTab('swap', this)">
+          <span>⚡</span> 换电商户
+        </a>
+        <a class="nav-item" data-tab="driving" onclick="switchTab('driving', this)">
+          <span>🏫</span> 驾校商户
+        </a>
+        <a class="nav-item" data-tab="rest" onclick="switchTab('rest', this)">
+          <span>🏠</span> 骑手驿站
+        </a>
+
+        <div class="nav-section-title" style="margin-top:24px">数据管理</div>
+        <a class="nav-item" onclick="showAllData()">
+          <span>📋</span> 全部数据
+        </a>
+
+        <div class="nav-section-title" style="margin-top:24px">营销管理</div>
+        <a class="nav-item" data-tab="campaign" onclick="switchTab('campaign', this)">
+          <span>📢</span> 营销方案
+        </a>
+        <a class="nav-item" data-tab="linkgen" onclick="switchTab('linkgen', this)">
+          <span>🔗</span> 外链生成
+        </a>
+        <a class="nav-item" data-tab="registrations" onclick="switchTab('registrations', this)">
+          <span>👥</span> 报名管理
+        </a>
+      </nav>
+
+      <!-- 数据统计 -->
+      <div class="sidebar-stats">
+        <div class="stat-item">
+          <span class="stat-num" id="stat-shop">0</span>
+          <span class="stat-label">车行</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-num" id="stat-swap">0</span>
+          <span class="stat-label">换电</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-num" id="stat-driving">0</span>
+          <span class="stat-label">驾校</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-num" id="stat-rest">0</span>
+          <span class="stat-label">驿站</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- 主内容区 -->
+    <main class="main">
+
+      <!-- 电动车行 -->
+      <section id="tab-shop" class="tab-panel active">
+        <div class="panel-header">
+          <h2>🛵 电动车行录入</h2>
+          <button class="btn btn-primary" onclick="submitForm('shop')">✓ 保存录入</button>
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>商户名称 <span class="required">*</span></label>
+            <input type="text" id="shop-name" placeholder="例：钟楼雅迪电动车行">
+          </div>
+          <div class="form-group">
+            <label>所在城市 <span class="required">*</span></label>
+            <select id="shop-city">
+              <option value="西安">西安</option>
+              <option value="长沙">长沙</option>
+              <option value="其他">其他</option>
+            </select>
+          </div>
+          <div class="form-group full-width">
+            <label>详细地址 <span class="required">*</span></label>
+            <input type="text" id="shop-address" placeholder="例：西安市碑林区东大街115号">
+          </div>
+          <div class="form-group">
+            <label>经度 <span class="required">*</span></label>
+            <input type="number" id="shop-longitude" placeholder="例：108.9432" step="0.0001">
+          </div>
+          <div class="form-group">
+            <label>纬度 <span class="required">*</span></label>
+            <input type="number" id="shop-latitude" placeholder="例：34.3456" step="0.0001">
+          </div>
+          <div class="form-group full-width">
+            <label>📌 坐标拾取（输入地址后点击获取）</label>
+            <button class="btn btn-outline" onclick="pickCoordinate('shop')">🗺️ 从地址解析坐标</button>
+          </div>
+          <div class="form-group">
+            <label>联系电话</label>
+            <input type="text" id="shop-contact" placeholder="例：029-82451234">
+          </div>
+          <div class="form-group">
+            <label>营业时间</label>
+            <input type="text" id="shop-businessHours" placeholder="例：08:30-20:00">
+          </div>
+          <div class="form-group">
+            <label>状态</label>
+            <select id="shop-status">
+              <option value="operating">营业中</option>
+              <option value="closed">已关闭</option>
+              <option value="maintenance">维护中</option>
+            </select>
+          </div>
+          <div class="form-group full-width">
+            <label>经营品牌（用逗号分隔）</label>
+            <input type="text" id="shop-brands" placeholder="例：雅迪,爱玛,台铃">
+            <div class="tag-suggestions">
+              <span class="tag-btn" onclick="appendTag('shop-brands','雅迪')">雅迪</span>
+              <span class="tag-btn" onclick="appendTag('shop-brands','爱玛')">爱玛</span>
+              <span class="tag-btn" onclick="appendTag('shop-brands','台铃')">台铃</span>
+              <span class="tag-btn" onclick="appendTag('shop-brands','绿源')">绿源</span>
+              <span class="tag-btn" onclick="appendTag('shop-brands','新日')">新日</span>
+              <span class="tag-btn" onclick="appendTag('shop-brands','小刀')">小刀</span>
+              <span class="tag-btn" onclick="appendTag('shop-brands','小牛')">小牛</span>
+              <span class="tag-btn" onclick="appendTag('shop-brands','九号')">九号</span>
+            </div>
+          </div>
+          <div class="form-group full-width">
+            <label>服务项目（用逗号分隔）</label>
+            <input type="text" id="shop-services" placeholder="例：新车销售,以旧换新,维修保养">
+            <div class="tag-suggestions">
+              <span class="tag-btn" onclick="appendTag('shop-services','新车销售')">新车销售</span>
+              <span class="tag-btn" onclick="appendTag('shop-services','以旧换新')">以旧换新</span>
+              <span class="tag-btn" onclick="appendTag('shop-services','维修保养')">维修保养</span>
+              <span class="tag-btn" onclick="appendTag('shop-services','配件销售')">配件销售</span>
+              <span class="tag-btn" onclick="appendTag('shop-services','租赁业务')">租赁业务</span>
+              <span class="tag-btn" onclick="appendTag('shop-services','锂电池租赁')">锂电池租赁</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>满意度评分（0-5）</label>
+            <input type="number" id="shop-rating" placeholder="例：4.8" min="0" max="5" step="0.1">
+          </div>
+          <div class="form-group">
+            <label>评分人数</label>
+            <input type="number" id="shop-ratingCount" placeholder="例：256" min="0">
+          </div>
+        </div>
+        <!-- 已录入车行列表 -->
+        <div class="data-list-section">
+          <h3>已录入车行 <span class="count-badge" id="shop-list-count">0</span></h3>
+          <div class="data-list" id="shop-list"></div>
+        </div>
+      </section>
+
+      <!-- 换电商户 -->
+      <section id="tab-swap" class="tab-panel">
+        <div class="panel-header">
+          <h2>⚡ 换电商户录入</h2>
+          <button class="btn btn-primary" onclick="submitForm('swap')">✓ 保存录入</button>
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>品牌名称 <span class="required">*</span></label>
+            <select id="swap-brandCode" onchange="syncSwapBrand()">
+              <option value="tietac">铁塔换电</option>
+              <option value="xiaoha">小哈换电</option>
+              <option value="zhizu">智租换电</option>
+              <option value="echange">e换电</option>
+              <option value="other">其他品牌</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>站点名称 <span class="required">*</span></label>
+            <input type="text" id="swap-name" placeholder="例：钟楼换电站">
+          </div>
+          <div class="form-group">
+            <label>所在城市 <span class="required">*</span></label>
+            <select id="swap-city">
+              <option value="西安">西安</option>
+              <option value="长沙">长沙</option>
+              <option value="其他">其他</option>
+            </select>
+          </div>
+          <div class="form-group full-width">
+            <label>详细地址 <span class="required">*</span></label>
+            <input type="text" id="swap-address" placeholder="例：西安市碑林区东大街钟楼附近">
+          </div>
+          <div class="form-group">
+            <label>经度 <span class="required">*</span></label>
+            <input type="number" id="swap-longitude" placeholder="例：108.9402" step="0.0001">
+          </div>
+          <div class="form-group">
+            <label>纬度 <span class="required">*</span></label>
+            <input type="number" id="swap-latitude" placeholder="例：34.3416" step="0.0001">
+          </div>
+          <div class="form-group full-width">
+            <label>📌 坐标拾取</label>
+            <button class="btn btn-outline" onclick="pickCoordinate('swap')">🗺️ 从地址解析坐标</button>
+          </div>
+          <div class="form-group">
+            <label>联系电话</label>
+            <input type="text" id="swap-contact" placeholder="例：400-123-4567">
+          </div>
+          <div class="form-group">
+            <label>营业时间</label>
+            <input type="text" id="swap-businessHours" placeholder="例：00:00-24:00">
+          </div>
+          <div class="form-group">
+            <label>状态</label>
+            <select id="swap-status">
+              <option value="operating">运营中</option>
+              <option value="closed">已关闭</option>
+              <option value="maintenance">维护中</option>
+            </select>
+          </div>
+          <div class="form-group full-width">
+            <label>支持电压（多选）</label>
+            <div class="checkbox-group">
+              <label class="checkbox-item"><input type="checkbox" class="swap-voltage" value="48V"> 48V</label>
+              <label class="checkbox-item"><input type="checkbox" class="swap-voltage" value="60V"> 60V</label>
+              <label class="checkbox-item"><input type="checkbox" class="swap-voltage" value="72V"> 72V</label>
+              <label class="checkbox-item"><input type="checkbox" class="swap-voltage" value="96V"> 96V</label>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>电池总量</label>
+            <input type="number" id="swap-batteryTotal" placeholder="例：20" min="0">
+          </div>
+          <div class="form-group">
+            <label>可换电池数</label>
+            <input type="number" id="swap-batteryAvailable" placeholder="例：15" min="0">
+          </div>
+          <div class="form-group">
+            <label>充电中数量</label>
+            <input type="number" id="swap-batteryCharging" placeholder="例：3" min="0">
+          </div>
+          <div class="form-group">
+            <label>月租价格（元/月）</label>
+            <input type="number" id="swap-price" placeholder="例：299" min="0">
+          </div>
+        </div>
+        <div class="data-list-section">
+          <h3>已录入换电站 <span class="count-badge" id="swap-list-count">0</span></h3>
+          <div class="data-list" id="swap-list"></div>
+        </div>
+      </section>
+
+      <!-- 驾校商户 -->
+      <section id="tab-driving" class="tab-panel">
+        <div class="panel-header">
+          <h2>🏫 驾校商户录入</h2>
+          <button class="btn btn-primary" onclick="submitForm('driving')">✓ 保存录入</button>
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>驾校名称 <span class="required">*</span></label>
+            <input type="text" id="driving-name" placeholder="例：蓝天驾校西安分校">
+          </div>
+          <div class="form-group">
+            <label>所在城市 <span class="required">*</span></label>
+            <select id="driving-city">
+              <option value="西安">西安</option>
+              <option value="长沙">长沙</option>
+              <option value="其他">其他</option>
+            </select>
+          </div>
+          <div class="form-group full-width">
+            <label>详细地址 <span class="required">*</span></label>
+            <input type="text" id="driving-address" placeholder="例：西安市碑林区环城南路12号">
+          </div>
+          <div class="form-group">
+            <label>经度 <span class="required">*</span></label>
+            <input type="number" id="driving-longitude" placeholder="例：108.9321" step="0.0001">
+          </div>
+          <div class="form-group">
+            <label>纬度 <span class="required">*</span></label>
+            <input type="number" id="driving-latitude" placeholder="例：34.3512" step="0.0001">
+          </div>
+          <div class="form-group full-width">
+            <label>📌 坐标拾取</label>
+            <button class="btn btn-outline" onclick="pickCoordinate('driving')">🗺️ 从地址解析坐标</button>
+          </div>
+          <div class="form-group">
+            <label>联系电话</label>
+            <input type="text" id="driving-contact" placeholder="例：029-88012345">
+          </div>
+          <div class="form-group">
+            <label>营业时间</label>
+            <input type="text" id="driving-businessHours" placeholder="例：08:00-18:00">
+          </div>
+          <div class="form-group">
+            <label>状态</label>
+            <select id="driving-status">
+              <option value="operating">招生中</option>
+              <option value="closed">暂停招生</option>
+            </select>
+          </div>
+          <div class="form-group full-width">
+            <label>可报考科目（多选）</label>
+            <div class="checkbox-group">
+              <label class="checkbox-item"><input type="checkbox" class="driving-subject" value="摩托车"> 摩托车驾照</label>
+              <label class="checkbox-item"><input type="checkbox" class="driving-subject" value="A1"> A1大型客车</label>
+              <label class="checkbox-item"><input type="checkbox" class="driving-subject" value="B2"> B2中型货车</label>
+              <label class="checkbox-item"><input type="checkbox" class="driving-subject" value="C1"> C1小型轿车</label>
+              <label class="checkbox-item"><input type="checkbox" class="driving-subject" value="D"> D普通三轮摩托</label>
+              <label class="checkbox-item"><input type="checkbox" class="driving-subject" value="E"> E普通二轮摩托</label>
+              <label class="checkbox-item"><input type="checkbox" class="driving-subject" value="F"> F轻便摩托</label>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>摩托驾照价格（元）</label>
+            <input type="number" id="driving-motoPrice" placeholder="例：1200" min="0">
+          </div>
+          <div class="form-group">
+            <label>C1驾照价格（元）</label>
+            <input type="number" id="driving-c1Price" placeholder="例：3800" min="0">
+          </div>
+          <div class="form-group">
+            <label>最快拿证周期</label>
+            <input type="text" id="driving-duration" placeholder="例：最快15天">
+          </div>
+          <div class="form-group full-width">
+            <label>特色服务标签（用逗号分隔）</label>
+            <input type="text" id="driving-tags" placeholder="例：包拿证,分期付款,上门接送">
+            <div class="tag-suggestions">
+              <span class="tag-btn" onclick="appendTag('driving-tags','包拿证')">包拿证</span>
+              <span class="tag-btn" onclick="appendTag('driving-tags','分期付款')">分期付款</span>
+              <span class="tag-btn" onclick="appendTag('driving-tags','上门接送')">上门接送</span>
+              <span class="tag-btn" onclick="appendTag('driving-tags','全程陪考')">全程陪考</span>
+              <span class="tag-btn" onclick="appendTag('driving-tags','骑手专属优惠')">骑手专属优惠</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>满意度评分（0-5）</label>
+            <input type="number" id="driving-rating" placeholder="例：4.7" min="0" max="5" step="0.1">
+          </div>
+          <div class="form-group">
+            <label>评分人数</label>
+            <input type="number" id="driving-ratingCount" placeholder="例：128" min="0">
+          </div>
+        </div>
+        <div class="data-list-section">
+          <h3>已录入驾校 <span class="count-badge" id="driving-list-count">0</span></h3>
+          <div class="data-list" id="driving-list"></div>
+        </div>
+      </section>
+
+      <!-- 骑手驿站 -->
+      <section id="tab-rest" class="tab-panel">
+        <div class="panel-header">
+          <h2>🏠 骑手驿站录入</h2>
+          <button class="btn btn-primary" onclick="submitForm('rest')">✓ 保存录入</button>
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>驿站名称 <span class="required">*</span></label>
+            <input type="text" id="rest-name" placeholder="例：钟楼骑手驿站">
+          </div>
+          <div class="form-group">
+            <label>所在城市 <span class="required">*</span></label>
+            <select id="rest-city">
+              <option value="西安">西安</option>
+              <option value="长沙">长沙</option>
+              <option value="其他">其他</option>
+            </select>
+          </div>
+          <div class="form-group full-width">
+            <label>详细地址 <span class="required">*</span></label>
+            <input type="text" id="rest-address" placeholder="例：西安市碑林区东大街钟楼附近">
+          </div>
+          <div class="form-group">
+            <label>经度 <span class="required">*</span></label>
+            <input type="number" id="rest-longitude" placeholder="例：108.9402" step="0.0001">
+          </div>
+          <div class="form-group">
+            <label>纬度 <span class="required">*</span></label>
+            <input type="number" id="rest-latitude" placeholder="例：34.3416" step="0.0001">
+          </div>
+          <div class="form-group full-width">
+            <label>📌 坐标拾取</label>
+            <button class="btn btn-outline" onclick="pickCoordinate('rest')">🗺️ 从地址解析坐标</button>
+          </div>
+          <div class="form-group">
+            <label>联系电话</label>
+            <input type="text" id="rest-contact" placeholder="例：029-82001234">
+          </div>
+          <div class="form-group">
+            <label>营业时间</label>
+            <input type="text" id="rest-businessHours" placeholder="例：08:00-22:00">
+          </div>
+          <div class="form-group">
+            <label>状态</label>
+            <select id="rest-status">
+              <option value="operating">开放中</option>
+              <option value="closed">已关闭</option>
+            </select>
+          </div>
+          <div class="form-group full-width">
+            <label>提供服务（多选）</label>
+            <div class="checkbox-group">
+              <label class="checkbox-item"><input type="checkbox" class="rest-service" value='{"icon":"💧","name":"饮水"}'> 💧 饮水</label>
+              <label class="checkbox-item"><input type="checkbox" class="rest-service" value='{"icon":"🛋️","name":"休息"}'> 🛋️ 休息</label>
+              <label class="checkbox-item"><input type="checkbox" class="rest-service" value='{"icon":"📶","name":"WiFi"}'> 📶 WiFi</label>
+              <label class="checkbox-item"><input type="checkbox" class="rest-service" value='{"icon":"🔌","name":"充电"}'> 🔌 充电</label>
+              <label class="checkbox-item"><input type="checkbox" class="rest-service" value='{"icon":"🔧","name":"维修"}'> 🔧 维修</label>
+              <label class="checkbox-item"><input type="checkbox" class="rest-service" value='{"icon":"❄️","name":"空调"}'> ❄️ 空调</label>
+              <label class="checkbox-item"><input type="checkbox" class="rest-service" value='{"icon":"🩹","name":"急救箱"}'> 🩹 急救箱</label>
+              <label class="checkbox-item"><input type="checkbox" class="rest-service" value='{"icon":"🚿","name":"淋浴"}'> 🚿 淋浴</label>
+            </div>
+          </div>
+        </div>
+        <div class="data-list-section">
+          <h3>已录入驿站 <span class="count-badge" id="rest-list-count">0</span></h3>
+          <div class="data-list" id="rest-list"></div>
+        </div>
+      </section>
+
+      <!-- 营销方案管理 -->
+      <section id="tab-campaign" class="tab-panel">
+        <div class="panel-header">
+          <h2>📢 营销方案管理</h2>
+          <button class="btn btn-primary" onclick="submitForm('campaign')">✓ 保存方案</button>
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>方案标题 <span class="required">*</span></label>
+            <input type="text" id="campaign-title" placeholder="例：摩托车驾照D照限时优惠">
+          </div>
+          <div class="form-group">
+            <label>所属模块</label>
+            <select id="campaign-module">
+              <option value="license">摩托驾照</option>
+              <option value="health">健康证</option>
+              <option value="recruit">骑手招募</option>
+              <option value="trade">二手交易</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>方案状态</label>
+            <select id="campaign-status">
+              <option value="active">立即发布</option>
+              <option value="draft">草稿</option>
+              <option value="expired">已过期</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>优惠价格（元）</label>
+            <input type="number" id="campaign-price" placeholder="例：899">
+          </div>
+          <div class="form-group">
+            <label>原价（元）</label>
+            <input type="number" id="campaign-originalPrice" placeholder="例：1200">
+          </div>
+          <div class="form-group">
+            <label>开始日期</label>
+            <input type="date" id="campaign-startDate">
+          </div>
+          <div class="form-group">
+            <label>结束日期</label>
+            <input type="date" id="campaign-endDate">
+          </div>
+          <div class="form-group full-width">
+            <label>封面图片URL</label>
+            <input type="text" id="campaign-cover" placeholder="输入图片URL地址">
+          </div>
+          <div class="form-group full-width">
+            <label>报名二维码图片URL</label>
+            <input type="text" id="campaign-qrcode" placeholder="输入二维码图片URL">
+            <p class="form-hint">可上传二维码图片到图床，获取URL填入此处</p>
+          </div>
+          <div class="form-group full-width">
+            <label>方案详情内容</label>
+            <textarea id="campaign-content" rows="10" placeholder="填写营销方案详情，支持HTML格式：
+- 方案介绍
+- 报名条件
+- 办理流程
+- 注意事项
+
+示例：
+&lt;h3&gt;🎯 方案介绍&lt;/h3&gt;
+&lt;p&gt;限时优惠！摩托车驾照D照，原价1200元，现仅需899元！&lt;/p&gt;
+&lt;h3&gt;📋 报名条件&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;年满18周岁，60周岁以下&lt;/li&gt;
+&lt;li&gt;身体健康，无色盲色弱&lt;/li&gt;
+&lt;li&gt;携带身份证原件&lt;/li&gt;
+&lt;/ul&gt;"></textarea>
+          </div>
+          <div class="form-group full-width">
+            <label>联系方式</label>
+            <input type="text" id="campaign-contact" placeholder="例：电话/微信/地址">
+          </div>
+        </div>
+        <div class="data-list-section">
+          <h3>已发布方案 <span class="count-badge" id="campaign-list-count">0</span></h3>
+          <div class="data-list" id="campaign-list"></div>
+        </div>
+      </section>
+
+      <!-- 外链生成 -->
+      <section id="tab-linkgen" class="tab-panel">
+        <div class="panel-header">
+          <h2>🔗 外链生成器</h2>
+        </div>
+        <div class="linkgen-container">
+          <div class="form-group full-width">
+            <label>选择营销方案</label>
+            <select id="link-campaign" onchange="updateLinkPreview()">
+              <option value="">-- 请选择方案 --</option>
+            </select>
+          </div>
+          <div class="form-group full-width">
+            <label>小程序AppID</label>
+            <input type="text" id="link-appid" value="wxc556049ae11556b1" readonly>
+          </div>
+          <div class="form-group">
+            <label>跳转页面</label>
+            <input type="text" id="link-path" value="pages/campaign/campaign" readonly>
+          </div>
+          <div class="form-group">
+            <label>场景值（参数）</label>
+            <input type="text" id="link-scene" placeholder="自动从方案ID生成">
+          </div>
+          
+          <div class="link-result" id="link-result">
+            <h4>📋 生成的外链</h4>
+            <div class="link-box">
+              <input type="text" id="link-url" readonly placeholder="选择方案后自动生成">
+            </div>
+            <div class="link-actions">
+              <button class="btn btn-primary" onclick="copyLink()">📋 复制链接</button>
+              <button class="btn btn-secondary" onclick="generateQRCode()">📱 生成二维码</button>
+            </div>
+          </div>
+          
+          <div class="qrcode-preview" id="qrcode-preview" style="display:none;">
+            <h4>📱 二维码预览</h4>
+            <div class="qrcode-box" id="qrcode-box">
+              <canvas id="qrcode-canvas" width="200" height="200"></canvas>
+            </div>
+            <button class="btn btn-primary" onclick="downloadQRCode()">⬇️ 下载二维码</button>
+          </div>
+          
+          <div class="link-template">
+            <h4>💡 分享方式</h4>
+            <div class="template-item">
+              <strong>方式一：直接分享链接</strong>
+              <p>复制上方链接，通过微信/短信/群聊发送给用户</p>
+            </div>
+            <div class="template-item">
+              <strong>方式二：生成二维码</strong>
+              <p>点击"生成二维码"按钮，下载二维码图片打印或张贴</p>
+            </div>
+            <div class="template-item">
+              <strong>方式三：嵌入海报</strong>
+              <p>将二维码图片嵌入宣传海报，易拉宝等物料</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 报名管理 -->
+      <section id="tab-registrations" class="tab-panel">
+        <div class="panel-header">
+          <h2>👥 报名信息管理</h2>
+        </div>
+        <div class="registrations-stats">
+          <div class="stat-card">
+            <span class="stat-icon">📊</span>
+            <div class="stat-info">
+              <span class="stat-num" id="reg-total">0</span>
+              <span class="stat-label">总报名数</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <span class="stat-icon">✅</span>
+            <div class="stat-info">
+              <span class="stat-num" id="reg-confirmed">0</span>
+              <span class="stat-label">已确认</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <span class="stat-icon">⏳</span>
+            <div class="stat-info">
+              <span class="stat-num" id="reg-pending">0</span>
+              <span class="stat-label">待处理</span>
+            </div>
+          </div>
+        </div>
+        <div class="data-list-section">
+          <h3>最新报名 <span class="count-badge" id="reg-list-count">0</span></h3>
+          <div class="data-list" id="reg-list">
+            <div class="empty-state">
+              <p>暂无报名数据</p>
+              <p class="hint">用户通过外链报名后，数据将显示在这里</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- 预览弹窗 -->
+  <div class="modal" id="preview-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span>📋 数据预览（stations.js 格式）</span>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+      <pre class="modal-body" id="preview-code"></pre>
+      <div class="modal-footer">
+        <button class="btn btn-primary" onclick="copyCode()">📋 复制代码</button>
+        <button class="btn btn-outline" onclick="downloadFile()">⬇️ 下载文件</button>
+        <button class="btn btn-ghost" onclick="closeModal()">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast通知 -->
+  <div class="toast" id="toast"></div>
+
+  <script src="admin.js"></script>
+  <script>
+    // ===== 登录验证 =====
+    const ADMIN_CREDENTIALS = {
+      username: 'admin',
+      password: 'admin123'
+    }
+
+    // 检查是否已登录
+    function checkLogin() {
+      const isLoggedIn = sessionStorage.getItem('admin_logged_in') === 'true'
+      const loginPage = document.getElementById('loginPage')
+      const adminContainer = document.getElementById('adminContainer')
+      
+      if (isLoggedIn) {
+        loginPage.style.display = 'none'
+        adminContainer.style.display = 'block'
+      } else {
+        loginPage.style.display = 'flex'
+        adminContainer.style.display = 'none'
+      }
+    }
+
+    // 处理登录
+    function handleLogin(e) {
+      e.preventDefault()
+      const username = document.getElementById('login-username').value.trim()
+      const password = document.getElementById('login-password').value
+      
+      if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
+        sessionStorage.setItem('admin_logged_in', 'true')
+        sessionStorage.setItem('admin_username', username)
+        checkLogin()
+        showToast('登录成功 ✅', 'success')
+      } else {
+        showToast('账号或密码错误', 'error')
+      }
+    }
+
+    // 退出登录
+    function logout() {
+      sessionStorage.removeItem('admin_logged_in')
+      sessionStorage.removeItem('admin_username')
+      document.getElementById('login-username').value = ''
+      document.getElementById('login-password').value = ''
+      checkLogin()
+      showToast('已退出登录', 'success')
+    }
+
+    // 页面加载时检查登录状态
+    window.addEventListener('DOMContentLoaded', function() {
+      // 注入退出登录按钮
+      setTimeout(function() {
+        var headerActions = document.querySelector('.header-actions')
+        if (headerActions && sessionStorage.getItem('admin_logged_in') === 'true') {
+          var logoutBtn = document.createElement('button')
+          logoutBtn.className = 'btn btn-outline'
+          logoutBtn.onclick = logout
+          logoutBtn.textContent = '🚪 退出'
+          headerActions.appendChild(logoutBtn)
+        }
+      }, 100)
+    })
+  </script>
+  </div>
+</body>
+</html>
