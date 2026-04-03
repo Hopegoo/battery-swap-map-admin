@@ -10,6 +10,12 @@ let db = {
 
 // 页面加载时恢复数据
 window.onload = function () {
+  // 检查登录状态
+  const isLoggedIn = sessionStorage.getItem('admin_logged_in') === 'true'
+  if (!isLoggedIn) {
+    return // 未登录，不初始化后台数据
+  }
+  
   loadFromStorage()
   updateStats()
   renderAllLists()
